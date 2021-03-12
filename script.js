@@ -83,16 +83,20 @@ search.addEventListener("keyup", function () {
 function searchByValue() {
   let subject = document.querySelector("#subject");
   let selected = subject.value;
-  // console.log(selected);
-  let subjectValue = "firstName";
+ // let subjectValue = "firstName";
 
-  searchByValueFilter(subjectValue);
+
+
+  searchByValueFilter("firstName");
 
   function searchByValueFilter(subjectValue) {
+  // let first;
     if (selected == subjectValue) {
-      mergedDataArr = mergedDataArr.filter((student) =>
-        student.firstName.toLowerCase().includes(search.value.toLowerCase())
-      );
+      mergedDataArr = mergedDataArr.filter((student) => {
+
+
+        return student[subjectValue].toLowerCase().includes(search.value.toLowerCase())
+      }); 
      // printTable(mergedDataArr);
     } else {
       printTable(mergedDataArr);
