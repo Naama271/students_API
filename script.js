@@ -6,14 +6,28 @@ const getData = async () => {
   const studentsData = await reqStudent.json();
 
   let studentsData2;
-  for (let i = 0; i < studentsData.length; i++) {
-    id = studentsData[i].id;
 
-    let url2 = `https://apple-seeds.herokuapp.com/api/users/${id}`;
-    const reqStudent2 = await fetch(url2);
-    studentsData2 = await reqStudent2.json();
-    data.push(studentsData2);
-  }
+  // const forLoop = async () => {
+  // for (let i = 0; i < studentsData.length; i++) {
+  // //  id = studentsData[i].id;
+
+  //   let url2 = `https://apple-seeds.herokuapp.com/api/users/${i}`;
+  //   const reqStudent2 = await fetch(url2);
+  //   studentsData2 = await reqStudent2.json();
+
+  await Promise.all(
+    studentsData.map(async (student, i) => {
+      const reqStudent2 = await fetch(
+        `https://apple-seeds.herokuapp.com/api/users/${i}`
+      );
+      const studentsData2 = await reqStudent2.json();
+      data.push(studentsData2);
+    })
+  );
+
+  // }
+  // }
+  //   forLoop();
 
   mergeData(studentsData, studentsData2);
 };
@@ -51,7 +65,7 @@ function printTable(mergedDataArr) {
   let table = document.querySelector("table");
 
   table.innerHTML = "";
-  table.innerHTML += `<tr><th> id </th> <th> firstName </th> </th> <th onclick="sorting()"> lastName</th><th>capsule </th><th>age</th><th>city<th><th>hobby</th><th>gender</th><th></th><th></th></tr>`;
+  table.innerHTML += `<tr><th> id </th> <th onclick="sortingByString('firstName')"> firstName </th> </th> <th onclick="sortingByString('lastName')"> lastName</th><th onclick="sortingByValue('capsule')"># </th><th onclick="sortingByValue('age')">age</th><th onclick="sortingByString('city')">city<th><th onclick="sortingByString('hobby')">hobby</th><th onclick="sortingByString('gender')">gender</th><th></th><th></th></tr>`;
 
   for (let i = 0; i < mergedDataArr.length; i++) {
     let id = mergedDataArr[i].id;
@@ -59,13 +73,13 @@ function printTable(mergedDataArr) {
     let lastName = mergedDataArr[i].lastName;
     let capsule = mergedDataArr[i].capsule;
     let city = mergedDataArr[i].city;
-    let gender = mergedDataArr[i].gender;
+    let gender = mergedDataArr[i].gender.toLowerCase();
     let hobby = mergedDataArr[i].hobby;
     let age = mergedDataArr[i].age;
 
-   // let container = document.querySelector(".itemsContainer");
+    // let container = document.querySelector(".itemsContainer");
 
-    table.innerHTML += `<tr id="${id}"><td> ${id} </td> <td> ${firstName} </td> </td> <td> ${lastName}</td><td>${capsule} </td><td>${age}</td><td><a href="https://www.google.com/maps/place/${city}/" target="_blank">${city}</a><td><td>${hobby}</td><td>${gender}</td><td><input type ="button" value="X" class="removeBTN" data = "${i}"  onclick="removeStudent(${i})"></td><td><input type ="button" value="edit" class="editBTN" data ="${id}" onclick="editStudent(${id})"></td></tr>`;
+    table.innerHTML += `<tr id="${id}"><td> ${id} </td> <td> ${firstName} </td> </td> <td> ${lastName}</td><td>${capsule} </td><td>${age}</td><td><a href="https://www.google.com/maps/place/${city}/" target="_blank">${city}</a><td><td>${hobby}</td><td><i class="fas fa-${gender}"></i></td><td onclick="removeStudent(${i})"><i class="fas fa-trash-alt" ></i></td><td onclick="editStudent(${id})" class="editBTN"><i class="fas fa-edit"></i></input></td></tr>`;
   }
 }
 
@@ -112,7 +126,6 @@ function searchByValue() {
           .toLowerCase()
           .includes(search.value.toLowerCase());
       });
-      // printTable(mergedDataArr);
     } else if (search.value === "") {
       mergedDataArr = mergedDataArr.filter((student, index) => {
         return student[subjectValue]
@@ -121,7 +134,6 @@ function searchByValue() {
           .includes(search.value.toLowerCase());
       });
       printTable(mergedDataArr);
-      // tr.forEach( tr=> tr.classList.add("hide") )
     }
   }
   printTable(mergedDataArr);
@@ -133,14 +145,14 @@ function editStudent(index) {
   tr = tr[index];
 
   tr.innerHTML = "";
-  tr.innerHTML = `<tr><td> ${index} </td> <td><input type="text" value="name"></td> </td> <td><input type="text" value="last"></td><td><input type="text" value="capsule"> </td><td><input type="text" value="age"></td><td><input type="text" value="city"><td><td><input type="text" value="hobby"></td><td><input type="text" value="gender"></td><td><input type ="button" value="CANCEL" class="cancelBTN" data = "${index}"  onclick="printTable(mergedDataArr)"></td><td><input type ="button" value="confirm" class="confirmBTN" data ="${index}"></td><tr>`;
+  tr.innerHTML = `<tr><td> ${index} </td> <td><input type="text" value="name" onclick="sortingByString("lastName")"></td> </td> <td><input type="text" value="last"></td><td><input type="text" value="capsule"> </td><td><input type="text" value="age"></td><td><input type="text" value="city"><td><td><input type="text" value="hobby"></td><td><input type="text" value="gender"></td><td><i class="fas fa-times" onclick="printTable(mergedDataArr)" class="cancelBTN"></i></td><td><i class="fas fa-check confirmBTN"></i></td><tr>`;
 
   cancelBTN = document.querySelector(".cancelBTN");
   confirmBTN = document.querySelector(".confirmBTN");
 
   confirmBTN.addEventListener("click", () => {
     editStudentConfirm(index);
-
+    printTable(mergedDataArr);
   });
 }
 
@@ -153,52 +165,53 @@ function editStudentConfirm(index) {
   let hobbyInput = document.querySelector('input[value="hobby"]');
   let genderInput = document.querySelector('input[value="gender"]');
 
-//  console.log(mergedDataArr[index]);
-  mergedDataArr[index].firstName = nameInput;
-  mergedDataArr[index].lastName = lastInput;
-  mergedDataArr[index].capsule = capsuleInput;
-  mergedDataArr[index].hobby = hobbyInput;
-  mergedDataArr[index].gender = genderInput;
-  ;
+  console.log(cityInput.value);
 
+  mergedDataArr[index].firstName = nameInput.value;
+  mergedDataArr[index].lastName = lastInput.value;
+  mergedDataArr[index].capsule = capsuleInput.value;
+  mergedDataArr[index].hobby = hobbyInput.value;
+  mergedDataArr[index].gender = genderInput.value;
+  mergedDataArr[index].gender = ageInput.value;
+  mergedDataArr[index].gender = cityInput.value;
+  printTable(mergedDataArr);
+}
+
+// function sorting(val) {
+// console.log(val);
+//   //val=  sortStr;
+//   sortingByString("firstName");
+//   sortingByString("lastName");
+//   sortingByString("hobby");
+//   sortingByString("city");
+//   sortingByString("gender");
+//   sortingByValue("age");
+//   sortingByValue("age");
+//   sortingByValue("capsule");
+
+function sortingByString(sortStr) {
+  mergedDataArr.sort((a, b) => {
+    a = a[sortStr];
+    b = b[sortStr];
+    let valueA = a.toUpperCase();
+    let valueB = b.toUpperCase();
+    if (valueA < valueB) {
+      return -1;
+    }
+    if (valueA > valueB) {
+      return 1;
+    }
+    return 0;
+  });
 
   printTable(mergedDataArr);
-
 }
 
-function sorting(value) {
-  sortingByString("firstName");
-  sortingByString("lastName");
-  sortingByString("hobby");
-  sortingByString("city");
-  sortingByString("gender");
-  sortingByValue("age");
-  sortingByValue("age");
-  sortingByValue("capsule");
-
-  function sortingByString(sortStr) {
-    mergedDataArr.sort((a, b) => {
-      a = a[sortStr];
-      b = b[sortStr];
-      let valueA = a.toUpperCase();
-      let valueB = b.toUpperCase();
-      if (valueA < valueB) {
-        return -1;
-      }
-      if (valueA > valueB) {
-        return 1;
-      }
-      return 0;
-    });
-
-    printTable(mergedDataArr);
-  }
-
-  function sortingByValue(sortValue) {
-    mergedDataArr.sort(function (a, b) {
-      return a[sortValue] - b[sortValue];
-    });
-    console.log(mergedDataArr);
-    printTable(mergedDataArr);
-  }
+function sortingByValue(sortValue) {
+  mergedDataArr.sort(function (a, b) {
+    return a[sortValue] - b[sortValue];
+  });
+  console.log(mergedDataArr);
+  printTable(mergedDataArr);
 }
+// }
