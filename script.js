@@ -51,6 +51,7 @@ function printTable(mergedDataArr) {
   let table = document.querySelector("table");
 
   table.innerHTML = "";
+  table.innerHTML += `<tr><th> id </th> <th> firstName </th> </th> <th onclick="sorting()"> lastName</th><th>capsule </th><th>age</th><th>city<th><th>hobby</th><th>gender</th><th></th><th></th></tr>`;
 
   for (let i = 0; i < mergedDataArr.length; i++) {
     let id = mergedDataArr[i].id;
@@ -62,7 +63,7 @@ function printTable(mergedDataArr) {
     let hobby = mergedDataArr[i].hobby;
     let age = mergedDataArr[i].age;
 
-    let container = document.querySelector(".itemsContainer");
+   // let container = document.querySelector(".itemsContainer");
 
     table.innerHTML += `<tr id="${id}"><td> ${id} </td> <td> ${firstName} </td> </td> <td> ${lastName}</td><td>${capsule} </td><td>${age}</td><td><a href="https://www.google.com/maps/place/${city}/" target="_blank">${city}</a><td><td>${hobby}</td><td>${gender}</td><td><input type ="button" value="X" class="removeBTN" data = "${i}"  onclick="removeStudent(${i})"></td><td><input type ="button" value="edit" class="editBTN" data ="${id}" onclick="editStudent(${id})"></td></tr>`;
   }
@@ -83,39 +84,121 @@ search.addEventListener("keyup", function () {
 function searchByValue() {
   let subject = document.querySelector("#subject");
   let selected = subject.value;
- // let subjectValue = "firstName";
-
-
 
   searchByValueFilter("firstName");
+  searchByValueFilter("lastName");
+  searchByValueFilter("age");
+  searchByValueFilter("city");
+  searchByValueFilter("gender");
+  searchByValueFilter("age");
+  searchByValueFilter("hobby");
+  searchByValueFilter("capsule");
 
   function searchByValueFilter(subjectValue) {
-  // let first;
+    let tr = document.querySelectorAll("tr");
     if (selected == subjectValue) {
-      mergedDataArr = mergedDataArr.filter((student) => {
+      mergedDataArr = mergedDataArr.filter((student, index) => {
+        if (
+          mergedDataArr[index][subjectValue]
+            .toString()
+            .toLowerCase()
+            .includes(search.value.toLowerCase())
+        ) {
+          tr[index].classList.add("hide");
+        }
 
-
-        return student[subjectValue].toLowerCase().includes(search.value.toLowerCase())
-      }); 
-     // printTable(mergedDataArr);
-    } else {
+        return student[subjectValue]
+          .toString()
+          .toLowerCase()
+          .includes(search.value.toLowerCase());
+      });
+      // printTable(mergedDataArr);
+    } else if (search.value === "") {
+      mergedDataArr = mergedDataArr.filter((student, index) => {
+        return student[subjectValue]
+          .toString()
+          .toLowerCase()
+          .includes(search.value.toLowerCase());
+      });
       printTable(mergedDataArr);
+      // tr.forEach( tr=> tr.classList.add("hide") )
     }
   }
   printTable(mergedDataArr);
 }
 
-
-
-
 function editStudent(index) {
+  let tr = document.querySelectorAll("tr");
+  // console.log(tr);
+  tr = tr[index];
 
- let tr = document.querySelectorAll("tr");
- // console.log(tr);
-   tr=tr[index];
+  tr.innerHTML = "";
+  tr.innerHTML = `<tr><td> ${index} </td> <td><input type="text" value="name"></td> </td> <td><input type="text" value="last"></td><td><input type="text" value="capsule"> </td><td><input type="text" value="age"></td><td><input type="text" value="city"><td><td><input type="text" value="hobby"></td><td><input type="text" value="gender"></td><td><input type ="button" value="CANCEL" class="cancelBTN" data = "${index}"  onclick="printTable(mergedDataArr)"></td><td><input type ="button" value="confirm" class="confirmBTN" data ="${index}"></td><tr>`;
 
-    tr.innerHTML = "";
-    tr.innerHTML += `<td> ${index} </td> <td><input type="text" value="name"></td> </td> <td><input type="text" value="last"></td><td><input type="text" value="capsule"> </td><td><input type="text" value="age"></td><td>city<td><td><input type="text" value="hobby"></td><td><input type="text" value="gender"></td><td><input type ="button" value="X" class="removeBTN" data = "${index}"  onclick="removeStudent(${index})"></td><td><input type ="button" value="confirm" class="editBTN" data ="${index}" onclick="confirm(${index})"></td>`;
+  cancelBTN = document.querySelector(".cancelBTN");
+  confirmBTN = document.querySelector(".confirmBTN");
+
+  confirmBTN.addEventListener("click", () => {
+    editStudentConfirm(index);
+
+  });
 }
 
-function editStudentConfirm() {}
+function editStudentConfirm(index) {
+  let nameInput = document.querySelector('input[value="name"]');
+  let lastInput = document.querySelector('input[value="last"]');
+  let capsuleInput = document.querySelector('input[value="capsule"]');
+  let ageInput = document.querySelector('input[value="age"]');
+  let cityInput = document.querySelector('input[value="city"]');
+  let hobbyInput = document.querySelector('input[value="hobby"]');
+  let genderInput = document.querySelector('input[value="gender"]');
+
+//  console.log(mergedDataArr[index]);
+  mergedDataArr[index].firstName = nameInput;
+  mergedDataArr[index].lastName = lastInput;
+  mergedDataArr[index].capsule = capsuleInput;
+  mergedDataArr[index].hobby = hobbyInput;
+  mergedDataArr[index].gender = genderInput;
+  ;
+
+
+  printTable(mergedDataArr);
+
+}
+
+function sorting(value) {
+  sortingByString("firstName");
+  sortingByString("lastName");
+  sortingByString("hobby");
+  sortingByString("city");
+  sortingByString("gender");
+  sortingByValue("age");
+  sortingByValue("age");
+  sortingByValue("capsule");
+
+  function sortingByString(sortStr) {
+    mergedDataArr.sort((a, b) => {
+      a = a[sortStr];
+      b = b[sortStr];
+      let valueA = a.toUpperCase();
+      let valueB = b.toUpperCase();
+      if (valueA < valueB) {
+        return -1;
+      }
+      if (valueA > valueB) {
+        return 1;
+      }
+      return 0;
+    });
+
+    printTable(mergedDataArr);
+  }
+
+  function sortingByValue(sortValue) {
+    mergedDataArr.sort(function (a, b) {
+      return a[sortValue] - b[sortValue];
+    });
+    console.log(mergedDataArr);
+    printTable(mergedDataArr);
+  }
+}
